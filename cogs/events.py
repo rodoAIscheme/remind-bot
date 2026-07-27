@@ -154,6 +154,22 @@ def sanitize_channel_name(name: str) -> str:
 
 # ── イベント参加チャンネル作成 ───────────────────────────────
 async def create_event_channel(guild: discord.Guild, ev_data: dict) -> discord.TextChannel:
+    # 不足権限を先に名指しする（403 だけ返されると原因が分からないため）
+    perms = guild.me.guild_permissions
+    missing = [
+        label
+        for label, ok in (
+            ('チャンネルの管理', perms.manage_channels),
+            ('ロールの管理', perms.manage_roles),
+        )
+        if not ok
+    ]
+    if missing:
+        raise RuntimeError(
+            f"Botに次の権限がありません: {' / '.join(missing)}。"
+            "サーバー設定 → ロール から付与してください。"
+        )
+
     # カテゴリを取得 or 作成
     cat = discord.utils.get(guild.categories, name=EVENT_CH_CATEGORY)
     if cat is None:
@@ -173,8 +189,6 @@ async def create_event_channel(guild: discord.Guild, ev_data: dict) -> discord.T
             view_channel=True,
             send_messages=True,
             read_message_history=True,
-            manage_channels=True,
-            manage_permissions=True,
         ),
     }
     for role_name in ('幹事', '企画長'):

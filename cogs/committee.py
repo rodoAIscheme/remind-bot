@@ -229,8 +229,6 @@ async def _create_committee_channel(guild: discord.Guild, data: dict) -> discord
             view_channel=True,
             send_messages=True,
             read_message_history=True,
-            manage_channels=True,
-            manage_permissions=True,
         ),
     }
     if kanji:
