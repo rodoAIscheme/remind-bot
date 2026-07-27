@@ -221,8 +221,17 @@ async def _create_committee_channel(guild: discord.Guild, data: dict) -> discord
     safe_name = re.sub(r'[\s　]', '-', data['title'])[:20]
     ch_name   = f"実委-{safe_name}"
 
+    # Bot 自身も明示的に許可しないと、作成直後に自分のチャンネルへ
+    # アクセスできなくなり set_permissions / send が Missing Access で失敗する
     overwrites = {
         guild.default_role: discord.PermissionOverwrite(view_channel=False),
+        guild.me: discord.PermissionOverwrite(
+            view_channel=True,
+            send_messages=True,
+            read_message_history=True,
+            manage_channels=True,
+            manage_permissions=True,
+        ),
     }
     if kanji:
         overwrites[kanji] = discord.PermissionOverwrite(view_channel=True, send_messages=True)

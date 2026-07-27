@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands, tasks
 from discord import app_commands
-import json, os, re
+import json, os, re, traceback
 from datetime import datetime
 
 import storage
@@ -165,8 +165,17 @@ async def create_event_channel(guild: discord.Guild, ev_data: dict) -> discord.T
     ch_name    = f"{emoji}{safe_name}"
 
     # @everyone は閲覧禁止、幹事・企画長は閲覧可
+    # Bot 自身も明示的に許可しないと、作成直後に自分のチャンネルへ
+    # アクセスできなくなり set_permissions が Missing Access で失敗する
     overwrites: dict = {
         guild.default_role: discord.PermissionOverwrite(view_channel=False),
+        guild.me: discord.PermissionOverwrite(
+            view_channel=True,
+            send_messages=True,
+            read_message_history=True,
+            manage_channels=True,
+            manage_permissions=True,
+        ),
     }
     for role_name in ('幹事', '企画長'):
         role = discord.utils.get(guild.roles, name=role_name)
@@ -462,6 +471,18 @@ class EventModal(discord.ui.Modal):
             await update_event_post(interaction, self.event_id, ev_data)
         else:
             await create_event_post(interaction, ev_data)
+
+    async def on_error(self, interaction: discord.Interaction, error: Exception, item=None):
+        # defer 済みで例外が出ると「考え中...」のまま固まるため、必ず理由を返す
+        traceback.print_exception(type(error), error, error.__traceback__)
+        msg = f"❌ 処理に失敗しました: {type(error).__name__}: {error}"
+        try:
+            if interaction.response.is_done():
+                await interaction.followup.send(msg, ephemeral=True)
+            else:
+                await interaction.response.send_message(msg, ephemeral=True)
+        except discord.HTTPException:
+            pass
 
 
 # ── イベント投稿上のボタン（永続） ───────────────────────────
