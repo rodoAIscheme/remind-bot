@@ -5,7 +5,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-DATA_FILE = os.path.join(os.path.dirname(__file__), "..", "data", "groups.json")
+import storage
 
 
 class GroupInvite(commands.Cog):
@@ -15,15 +15,10 @@ class GroupInvite(commands.Cog):
         self._load()
 
     def _load(self):
-        os.makedirs(os.path.dirname(DATA_FILE), exist_ok=True)
-        if os.path.exists(DATA_FILE):
-            with open(DATA_FILE, "r", encoding="utf-8") as f:
-                self.groups = json.load(f)
+        self.groups = storage.load("groups", [])
 
     def _save(self):
-        os.makedirs(os.path.dirname(DATA_FILE), exist_ok=True)
-        with open(DATA_FILE, "w", encoding="utf-8") as f:
-            json.dump(self.groups, f, ensure_ascii=False, indent=2)
+        storage.save("groups", self.groups)
 
     def _find_group(self, message_id: int, emoji: str) -> dict | None:
         return next(

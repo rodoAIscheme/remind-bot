@@ -4,7 +4,7 @@ from discord import app_commands
 import json, os, re
 from datetime import datetime
 
-DATA_FILE = os.path.join(os.path.dirname(__file__), '..', 'events_data.json')
+import storage
 
 # ── 企画定義 ────────────────────────────────────────────────
 ENTERPRISES = [
@@ -106,14 +106,10 @@ EVENT_CH_CATEGORY = "イベント"
 
 # ── データ管理 ──────────────────────────────────────────────
 def load_data() -> dict:
-    if not os.path.exists(DATA_FILE):
-        return {}
-    with open(DATA_FILE, encoding='utf-8') as f:
-        return json.load(f)
+    return storage.load('events', {})
 
 def save_data(data: dict):
-    with open(DATA_FILE, 'w', encoding='utf-8') as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
+    storage.save('events', data)
 
 def parse_dt(text: str) -> datetime | None:
     patterns = [

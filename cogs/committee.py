@@ -3,7 +3,8 @@ from discord.ext import commands
 from discord import app_commands
 import json, os, re
 
-DATA_FILE   = os.path.join(os.path.dirname(__file__), '..', 'committee_data.json')
+import storage
+
 RECRUIT_CH  = "実行委員募集"
 COMMITTEE_CAT = "実行委員"
 GROUP_CH    = "グループ相談"
@@ -11,14 +12,10 @@ GROUP_CH    = "グループ相談"
 
 # ── データ管理 ──────────────────────────────────────────────
 def load() -> dict:
-    if not os.path.exists(DATA_FILE):
-        return {}
-    with open(DATA_FILE, encoding='utf-8') as f:
-        return json.load(f)
+    return storage.load('committee', {})
 
 def save(data: dict):
-    with open(DATA_FILE, 'w', encoding='utf-8') as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
+    storage.save('committee', data)
 
 
 # ── 権限チェック（events.py と同じ） ─────────────────────────

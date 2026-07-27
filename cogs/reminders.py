@@ -7,8 +7,9 @@ import discord
 from discord import app_commands
 from discord.ext import commands, tasks
 
+import storage
+
 JST = timezone(timedelta(hours=9))
-DATA_FILE = os.path.join(os.path.dirname(__file__), "..", "data", "reminders.json")
 
 RELATIVE_PATTERN = re.compile(
     r"^(\d+)\s*(分後|時間後|日後|週間後|ヶ月後|か月後|カ月後|年後)$"
@@ -72,17 +73,12 @@ class Reminders(commands.Cog):
         self.check_reminders.cancel()
 
     def _load(self):
-        os.makedirs(os.path.dirname(DATA_FILE), exist_ok=True)
-        if os.path.exists(DATA_FILE):
-            with open(DATA_FILE, "r", encoding="utf-8") as f:
-                self.reminders = json.load(f)
-            if self.reminders:
-                self._next_id = max(r["id"] for r in self.reminders) + 1
+        self.reminders = storage.load("reminders", [])
+        if self.reminders:
+            self._next_id = max(r["id"] for r in self.reminders) + 1
 
     def _save(self):
-        os.makedirs(os.path.dirname(DATA_FILE), exist_ok=True)
-        with open(DATA_FILE, "w", encoding="utf-8") as f:
-            json.dump(self.reminders, f, ensure_ascii=False, indent=2)
+        storage.save("reminders", self.reminders)
 
     @app_commands.command(name="remind", description="リマインドを設定します")
     @app_commands.describe(
