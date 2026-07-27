@@ -110,7 +110,8 @@ class Reminders(commands.Cog):
         self._save()
 
         await interaction.response.send_message(
-            f"リマインドを設定しました: {due.strftime('%Y/%m/%d %H:%M')} JST に「{content}」をお知らせします。(ID: {reminder['id']})"
+            f"リマインドを設定しました: {due.strftime('%Y/%m/%d %H:%M')} JST に「{content}」をお知らせします。(ID: {reminder['id']})",
+            ephemeral=True,
         )
 
     @app_commands.command(name="reminders", description="自分が設定したリマインド一覧を表示します")
