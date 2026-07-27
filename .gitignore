@@ -3,3 +3,7 @@ __pycache__/
 *.pyc
 venv/
 data/
+events_data.json
+bot.pid
+bot_log.txt
+*.log
